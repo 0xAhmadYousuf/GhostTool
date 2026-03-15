@@ -45,10 +45,11 @@ jobs:
               echo "is_prerelease=false" >> $GITHUB_OUTPUT
             fi
             
-            # Extract everything else as the release body
-            echo "release_body<<EOF" >> $GITHUB_OUTPUT
-            echo "$MSG" | grep -v "\-\-r " | grep -v "\-\-pr" | grep -v "\-\-b" >> $GITHUB_OUTPUT
-            echo "EOF" >> $GITHUB_OUTPUT
+            # Extract everything else as the release body (removing the flags)
+            EOF_DELIM=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
+            echo "release_body<<$EOF_DELIM" >> $GITHUB_OUTPUT
+            echo "$MSG" | sed -E 's/--r [^ ]+//g' | sed 's/--pr//g' | sed 's/--b//g' | sed -e 's/^[[:space:]]*//' >> $GITHUB_OUTPUT
+            echo "$EOF_DELIM" >> $GITHUB_OUTPUT
           else
             echo "should_release=false" >> $GITHUB_OUTPUT
           fi
