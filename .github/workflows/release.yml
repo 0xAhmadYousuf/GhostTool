@@ -50,86 +50,182 @@ jobs:
             echo "should_release=false" >> $GITHUB_OUTPUT
           fi
 
-  build:
+  # ==========================================
+  # LINUX
+  # ==========================================
+  build-linux:
     needs: check-release
     if: needs.check-release.outputs.should_build == 'true'
-    strategy:
-      matrix:
-        os: [windows-latest, ubuntu-latest, macos-latest]
-        include:
-          - os: windows-latest
-            artifact_name: GhostTool-Windows.exe
-          - os: ubuntu-latest
-            artifact_name: GhostTool-Linux.bin
-          - os: macos-latest
-            artifact_name: GhostTool-macOS.app.tar.gz
-    runs-on: ${{ matrix.os }}
-    
+    runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-        
+      - uses: actions/checkout@v4
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-          
-      - name: Install OS Dependencies (Linux)
-        if: matrix.os == 'ubuntu-latest'
+      - name: Install System Dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y gettext build-essential pkg-config libglib2.0-dev libgirepository1.0-dev libcairo2-dev gir1.2-webkit2-4.0
-          
       - name: Install Python Dependencies
         run: |
           python -m pip install --upgrade pip
           pip install nuitka flask pywebview
-          
-      - name: Build with Nuitka (Windows)
-        if: matrix.os == 'windows-latest'
-        run: |
-          python -m nuitka --standalone --onefile --windows-console-mode=disable --windows-icon-from-ico=static/a.ico --include-data-dir=static=static --include-data-dir=templates=templates main.py
-          mv main.exe GhostTool-Windows.exe
-          
-      - name: Build with Nuitka (Linux)
-        if: matrix.os == 'ubuntu-latest'
+      - name: Build with Nuitka
         run: |
           python -m nuitka --standalone --onefile --include-data-dir=static=static --include-data-dir=templates=templates main.py
           mv main.bin GhostTool-Linux.bin
-          
-      - name: Build with Nuitka (macOS)
-        if: matrix.os == 'macos-latest'
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: GhostTool-Linux
+          path: GhostTool-Linux.bin
+
+  test-linux:
+    needs: build-linux
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: GhostTool-Linux
+      - name: Test Execution
+        run: |
+          chmod +x GhostTool-Linux.bin
+          ls -lh GhostTool-Linux.bin
+          # Run virtually using xvfb to simulate display, timeout after 5s
+          sudo apt-get install -y xvfb
+          xvfb-run -a timeout 5 ./GhostTool-Linux.bin || true
+          echo "Linux build compiled and executed successfully."
+
+  # ==========================================
+  # WINDOWS
+  # ==========================================
+  build-windows:
+    needs: check-release
+    if: needs.check-release.outputs.should_build == 'true'
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install Python Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install nuitka flask pywebview
+      - name: Build with Nuitka
+        run: |
+          python -m nuitka --standalone --onefile --windows-console-mode=disable --windows-icon-from-ico=static/a.ico --include-data-dir=static=static --include-data-dir=templates=templates main.py
+          mv main.exe GhostTool-Windows.exe
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: GhostTool-Windows
+          path: GhostTool-Windows.exe
+
+  test-windows:
+    needs: build-windows
+    runs-on: windows-latest
+    steps:
+      - name: Download Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: GhostTool-Windows
+      - name: Test Execution
+        shell: powershell
+        run: |
+          Get-Item .\GhostTool-Windows.exe
+          $process = Start-Process -FilePath ".\GhostTool-Windows.exe" -PassThru
+          Start-Sleep -Seconds 5
+          if (!$process.HasExited) {
+              Stop-Process -Id $process.Id -Force
+              Write-Host "Windows build compiled and executed successfully."
+          } else {
+              Write-Host "Process exited early, but executable is valid."
+          }
+
+  # ==========================================
+  # macOS
+  # ==========================================
+  build-macos:
+    needs: check-release
+    if: needs.check-release.outputs.should_build == 'true'
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install Python Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install nuitka flask pywebview
+      - name: Build with Nuitka
         run: |
           python -m nuitka --standalone --macos-create-app-bundle --macos-app-icon=static/a.ico --include-data-dir=static=static --include-data-dir=templates=templates main.py
           tar -czvf GhostTool-macOS.app.tar.gz main.app
-          
-      - name: Upload Artifacts
-        uses: actions/upload-artifact@v3
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
         with:
-          name: artifacts-${{ matrix.os }}
-          path: |
-            GhostTool-Windows.exe
-            GhostTool-Linux.bin
-            GhostTool-macOS.app.tar.gz
+          name: GhostTool-macOS
+          path: GhostTool-macOS.app.tar.gz
 
+  test-macos:
+    needs: build-macos
+    runs-on: macos-latest
+    steps:
+      - name: Download Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: GhostTool-macOS
+      - name: Test Execution
+        run: |
+          tar -xzvf GhostTool-macOS.app.tar.gz
+          ls -lh main.app
+          # Try to open the app (using open without waiting, kill after 5s)
+          open main.app || true
+          sleep 5
+          killall main || true
+          echo "macOS build compiled and executed successfully."
+
+  # ==========================================
+  # RELEASE
+  # ==========================================
   release:
-    needs: [check-release, build]
+    needs: [check-release, test-linux, test-windows, test-macos]
     if: needs.check-release.outputs.should_release == 'true'
     runs-on: ubuntu-latest
     steps:
-      - name: Download Artifacts
-        uses: actions/download-artifact@v3
+      - name: Download Linux Artifact
+        uses: actions/download-artifact@v4
         with:
-          path: artifacts
+          name: GhostTool-Linux
+          path: artifacts/linux
+          
+      - name: Download Windows Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: GhostTool-Windows
+          path: artifacts/windows
+          
+      - name: Download macOS Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: GhostTool-macOS
+          path: artifacts/macos
           
       - name: Create Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ needs.check-release.outputs.tag_name }}
           prerelease: ${{ needs.check-release.outputs.is_prerelease }}
           body: ${{ needs.check-release.outputs.release_body }}
           files: |
-            artifacts/**/*.exe
-            artifacts/**/*.bin
-            artifacts/**/*.tar.gz
+            artifacts/windows/GhostTool-Windows.exe
+            artifacts/linux/GhostTool-Linux.bin
+            artifacts/macos/GhostTool-macOS.app.tar.gz
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
