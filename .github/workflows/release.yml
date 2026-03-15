@@ -70,10 +70,10 @@ jobs:
       - name: Install Python Dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install nuitka flask pywebview imageio
+          pip install "Nuitka[onefile]" flask pywebview imageio
       - name: Build with Nuitka
         run: |
-          python -m nuitka --standalone --onefile --include-data-dir=static=static --include-data-dir=templates=templates main.py
+          python -m nuitka --assume-yes-for-downloads --standalone --onefile --include-data-dir=static=static --include-data-dir=templates=templates main.py
           mv main.bin GhostTool-Linux.bin
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
@@ -114,10 +114,10 @@ jobs:
       - name: Install Python Dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install nuitka flask pywebview imageio
+          pip install "Nuitka[onefile]" flask pywebview imageio
       - name: Build with Nuitka
         run: |
-          python -m nuitka --standalone --onefile --windows-console-mode=disable --windows-icon-from-ico=static/a.ico --include-data-dir=static=static --include-data-dir=templates=templates main.py
+          python -m nuitka --assume-yes-for-downloads --standalone --onefile --windows-console-mode=disable --windows-icon-from-ico=static/a.ico --include-data-dir=static=static --include-data-dir=templates=templates main.py
           mv main.exe GhostTool-Windows.exe
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
@@ -162,10 +162,10 @@ jobs:
       - name: Install Python Dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install nuitka flask pywebview imageio
+          pip install "Nuitka[onefile]" flask pywebview imageio
       - name: Build with Nuitka
         run: |
-          python -m nuitka --standalone --macos-create-app-bundle --macos-app-icon=static/a.ico --include-data-dir=static=static --include-data-dir=templates=templates main.py
+          python -m nuitka --assume-yes-for-downloads --standalone --macos-create-app-bundle --macos-app-icon=static/a.ico --include-data-dir=static=static --include-data-dir=templates=templates main.py
           tar -czvf GhostTool-macOS.app.tar.gz main.app
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
