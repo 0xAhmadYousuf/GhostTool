@@ -12,6 +12,7 @@ GhostTool is a lightweight, all-in-one standalone utility hub built for develope
 ## The Toolbox (23 Tools Included)
 
 ### 💻 Developer Tools
+
 - **Code Diff Viewer:** Compare two blocks of code cleanly using Inline or Unified modes.
 - **JSON Formatter:** Format, minify, un-minify, and validate JSON payloads instantly.
 - **Regex Tester:** Test JavaScript regular expressions with highlighting and presets (Email, URL, IP).
@@ -22,11 +23,13 @@ GhostTool is a lightweight, all-in-one standalone utility hub built for develope
 - **HTTP Status Codes:** A fast, searchable reference guide for standard HTTP status codes.
 
 ### 🎨 Design & Authoring
+
 - **Color Picker:** Hex, RGB, and HSL converter with a swatches palette.
 - **Markdown Preview:** Write markdown with a live rendered preview and instantly copy the generated HTML.
 - **Lorem Ipsum Generator:** Generate placeholder text by words, sentences, or paragraphs.
 
 ### ⏰ Time & Productivity
+
 - **Pomodoro / Focus Mode:** Stay focused with 25-minute sprints, short/long breaks, or custom flow states. Includes a full-screen distraction-free overlay.
 - **Stopwatch:** Standard stopwatch with lap tracking.
 - **World Clocks:** Track timezones from New York to Tokyo. Completely customizable and removable.
@@ -36,20 +39,24 @@ GhostTool is a lightweight, all-in-one standalone utility hub built for develope
 - **Quick Calculator:** On-the-fly math evaluator that displays the result along with Hex, Octal, and Binary conversions.
 
 ### ⚡ System Automation
+
 - **Shutdown Timer:** Set your PC to shutdown gracefully after X hours/minutes.
 - **Schedule Shutdown:** Select an exact time of day for your system to shutdown.
 - **Countdown Timer:** Countdown to a specific date/time in the future.
 
 ### 🔒 Security
+
 - **Password Generator:** Securely generate random passwords and tokens with exact character rules and a strength meter. Can also generate bulk batches and UUIDs.
 
 ## Installation & Running
 
 ### Requirements
+
 - Python 3.10+
 - OS: Windows, macOS, or Linux
 
 ### Setup
+
 Run the following command to install the required libraries (`Flask` and `pywebview`). GhostTool will automatically attempt to install these on the first run, but you can install them manually:
 
 ```bash
@@ -57,18 +64,21 @@ pip install flask pywebview
 ```
 
 ### Launch
+
 To open GhostTool, run the main Python script:
 
 ```bash
 python main.py
 ```
 
-It will launch a native desktop window. All Python console logs have been suppressed for a cleaner user experience. Ensure `static/a.ico` is in the same directory for the app icon to display properly.
+It will launch a native desktop window. All Python console logs have been suppressed for a cleaner user experience. Ensure `static/logo.ico` is in the same directory for the app icon to display properly.
 
 ## Tech Stack
+
 - **Backend:** Python 3, Flask, PyWebView
 - **Frontend:** HTML5, Vanilla JavaScript, Vanilla CSS
 - **Design:** Single-page architecture (SPA), custom theming (`JetBrains Mono` font), custom SVG iconography.
 
 ## License
+
 MIT License.

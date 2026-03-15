@@ -27,7 +27,7 @@ logging.getLogger("werkzeug").setLevel(logging.CRITICAL)
 logging.getLogger("flask").setLevel(logging.CRITICAL)
 
 BASE = os.path.dirname(os.path.abspath(__file__))
-ICON = os.path.join(BASE, "static", "a.ico")
+ICON = os.path.join(BASE, "static", "logo.ico")
 app = Flask(
     __name__,
     template_folder=os.path.join(BASE, "templates"),
