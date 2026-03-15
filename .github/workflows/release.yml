@@ -1,0 +1,135 @@
+name: Cross-Platform Build & Release
+
+on:
+  push:
+    branches:
+      - main
+      - master
+
+jobs:
+  check-release:
+    runs-on: ubuntu-latest
+    outputs:
+      should_build: ${{ steps.check.outputs.should_build }}
+      should_release: ${{ steps.check.outputs.should_release }}
+      tag_name: ${{ steps.check.outputs.tag_name }}
+      is_prerelease: ${{ steps.check.outputs.is_prerelease }}
+      release_body: ${{ steps.check.outputs.release_body }}
+    steps:
+      - name: Check commit message
+        id: check
+        run: |
+          MSG="${{ github.event.head_commit.message }}"
+          
+          # Check if we should build (either --b or --r)
+          if [[ "$MSG" == *"--r "* ]] || [[ "$MSG" == *"--b"* ]]; then
+            echo "should_build=true" >> $GITHUB_OUTPUT
+          else
+            echo "should_build=false" >> $GITHUB_OUTPUT
+          fi
+          
+          # Check if we should release
+          if [[ "$MSG" == *"--r "* ]]; then
+            echo "should_release=true" >> $GITHUB_OUTPUT
+            
+            # Extract tag: gets the next word after --r
+            TAG=$(echo "$MSG" | grep -oP '(?<=--r )\S+')
+            echo "tag_name=$TAG" >> $GITHUB_OUTPUT
+            
+            if [[ "$MSG" == *"--pr"* ]]; then
+              echo "is_prerelease=true" >> $GITHUB_OUTPUT
+            else
+              echo "is_prerelease=false" >> $GITHUB_OUTPUT
+            fi
+            
+            # Extract everything else as the release body
+            echo "release_body<<EOF" >> $GITHUB_OUTPUT
+            echo "$MSG" | grep -v "\-\-r " | grep -v "\-\-pr" | grep -v "\-\-b" >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+          else
+            echo "should_release=false" >> $GITHUB_OUTPUT
+          fi
+
+  build:
+    needs: check-release
+    if: needs.check-release.outputs.should_build == 'true'
+    strategy:
+      matrix:
+        os: [windows-latest, ubuntu-latest, macos-latest]
+        include:
+          - os: windows-latest
+            artifact_name: GhostTool-Windows.exe
+          - os: ubuntu-latest
+            artifact_name: GhostTool-Linux.bin
+          - os: macos-latest
+            artifact_name: GhostTool-macOS.app.tar.gz
+    runs-on: ${{ matrix.os }}
+    
+    steps:
+      - uses: actions/checkout@v3
+        
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+          
+      - name: Install OS Dependencies (Linux)
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gettext build-essential pkg-config libglib2.0-dev libgirepository1.0-dev libcairo2-dev gir1.2-webkit2-4.0
+          
+      - name: Install Python Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install nuitka flask pywebview
+          
+      - name: Build with Nuitka (Windows)
+        if: matrix.os == 'windows-latest'
+        run: |
+          python -m nuitka --standalone --onefile --windows-console-mode=disable --windows-icon-from-ico=static/a.ico --include-data-dir=static=static --include-data-dir=templates=templates main.py
+          mv main.exe GhostTool-Windows.exe
+          
+      - name: Build with Nuitka (Linux)
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          python -m nuitka --standalone --onefile --include-data-dir=static=static --include-data-dir=templates=templates main.py
+          mv main.bin GhostTool-Linux.bin
+          
+      - name: Build with Nuitka (macOS)
+        if: matrix.os == 'macos-latest'
+        run: |
+          python -m nuitka --standalone --macos-create-app-bundle --macos-app-icon=static/a.ico --include-data-dir=static=static --include-data-dir=templates=templates main.py
+          tar -czvf GhostTool-macOS.app.tar.gz main.app
+          
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: artifacts-${{ matrix.os }}
+          path: |
+            GhostTool-Windows.exe
+            GhostTool-Linux.bin
+            GhostTool-macOS.app.tar.gz
+
+  release:
+    needs: [check-release, build]
+    if: needs.check-release.outputs.should_release == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download Artifacts
+        uses: actions/download-artifact@v3
+        with:
+          path: artifacts
+          
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ needs.check-release.outputs.tag_name }}
+          prerelease: ${{ needs.check-release.outputs.is_prerelease }}
+          body: ${{ needs.check-release.outputs.release_body }}
+          files: |
+            artifacts/**/*.exe
+            artifacts/**/*.bin
+            artifacts/**/*.tar.gz
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
