@@ -1,5 +1,6 @@
 import sys, platform, subprocess, time, logging, os
 from threading import Thread, Event
+import psutil
 
 # ── Suppress ALL CLI output ──
 logging.disable(logging.CRITICAL)
@@ -37,6 +38,8 @@ app.config["DEBUG"] = False
 
 _window = None
 _on_top = False
+_last_net = None
+_last_time = None
 
 def _set_on_top(val):
     global _on_top
@@ -134,15 +137,37 @@ def api_ontop():
 def api_ontop_get():
     return jsonify({"on_top": _on_top})
 
-if __name__ == "__main__":
+@app.route("/api/sysmetrics", methods=["GET"])
+def api_sysmetrics():
+    global _last_net, _last_time
     try:
-        import webview
-    except ImportError:
-        subprocess.run(
-            [sys.executable, "-m", "pip", "install", "pywebview", "--break-system-packages", "-q"],
-            capture_output=True,
-        )
-        import webview
+        cpu = psutil.cpu_percent(interval=None)
+        ram = psutil.virtual_memory().percent
+        
+        net = psutil.net_io_counters()
+        now = time.time()
+        
+        net_up = 0
+        net_down = 0
+        if _last_net is not None and _last_time is not None:
+            dt = now - _last_time
+            if dt > 0:
+                net_up = (net.bytes_sent - _last_net.bytes_sent) / dt
+                net_down = (net.bytes_recv - _last_net.bytes_recv) / dt
+                
+        _last_net = net
+        _last_time = now
+        
+        # aggressively free memory to keep python footprint tiny
+        import gc
+        gc.collect()
+
+        return jsonify({"cpu": float(cpu), "ram": float(ram), "net_up": float(net_up), "net_down": float(net_down)})
+    except Exception:
+        return jsonify({"cpu": 0, "ram": 0, "net_up": 0, "net_down": 0})
+
+if __name__ == "__main__":
+    import webview
 
     win = webview.create_window(
         "GhostTool",

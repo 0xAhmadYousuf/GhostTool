@@ -6,6 +6,9 @@ on:
       - main
       - master
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   check-release:
     runs-on: ubuntu-latest
@@ -70,7 +73,7 @@ jobs:
       - name: Install Python Dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install "Nuitka[onefile]" flask pywebview imageio
+          pip install -r requirements.txt
       - name: Build with Nuitka
         run: |
           python -m nuitka --assume-yes-for-downloads --standalone --onefile --include-data-dir=static=static --include-data-dir=templates=templates main.py
@@ -114,7 +117,7 @@ jobs:
       - name: Install Python Dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install "Nuitka[onefile]" flask pywebview imageio
+          pip install -r requirements.txt
       - name: Build with Nuitka
         run: |
           python -m nuitka --assume-yes-for-downloads --standalone --onefile --windows-console-mode=disable --windows-icon-from-ico=static/a.ico --include-data-dir=static=static --include-data-dir=templates=templates main.py
@@ -162,7 +165,7 @@ jobs:
       - name: Install Python Dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install "Nuitka[onefile]" flask pywebview imageio
+          pip install -r requirements.txt
       - name: Build with Nuitka
         run: |
           python -m nuitka --assume-yes-for-downloads --standalone --macos-create-app-bundle --macos-app-icon=static/a.ico --include-data-dir=static=static --include-data-dir=templates=templates main.py

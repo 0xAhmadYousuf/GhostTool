@@ -107,7 +107,54 @@ function updRing(c,t){const r=$('ring');if(!r)return;r.style.strokeDasharray=CIR
 function startGrace(){clearInterval(gId);updRing(gSec,gTot);$('rnum').textContent=gSec;gId=setInterval(()=>{gSec--;$('rnum').textContent=gSec;updRing(gSec,gTot);if(gSec<=0){clearInterval(gId);allowShutdown()}},1000)}
 async function panicCancel(){clearInterval(gId);$('ov').classList.remove('open');confOpen=false;sdRun=false;await api('/api/cancel');resetSd();toast('// ABORTED')}
 async function allowShutdown(){clearInterval(gId);$('ov').classList.remove('open');confOpen=false;await api('/api/execute_shutdown')}
-setInterval(async()=>{if(!sdRun||confOpen)return;try{const d=await(await fetch('/api/status')).json();if(d.running)sdRem=d.remaining;else if(!confOpen)openConf()}catch(e){}},5000);
+setInterval(async()=>{
+  if(!sdRun||confOpen)return;
+  try{const d=await(await fetch('/api/status')).json();if(d.running)sdRem=d.remaining;else if(!confOpen)openConf()}catch(e){}
+},5000);
+const graphPts = {cpu:[], ram:[], net:[]};
+function getSvgPts(arr, maxVal){
+  if(!arr.length) return '';
+  let pts = '';
+  for(let i=0; i<arr.length; i++){
+    let x = (i / 39) * 100;
+    let p = maxVal > 0 ? clamp(arr[i] / maxVal, 0, 1) : 0;
+    let y = 30 - (p * 30);
+    pts += `${x.toFixed(1)},${y.toFixed(1)} `;
+  }
+  return pts.trim();
+}
+
+setInterval(async()=>{
+  if(activeTool !== 'metrics') {
+    if(graphPts.cpu.length) { graphPts.cpu=[]; graphPts.ram=[]; graphPts.net=[]; }
+    return;
+  }
+  try{
+    const d=await(await fetch('/api/sysmetrics')).json();
+    if($('cpuUse'))$('cpuUse').textContent=d.cpu.toFixed(1)+'%';
+    if($('ramUse'))$('ramUse').textContent=d.ram.toFixed(1)+'%';
+    
+    let upK = d.net_up / 1024;
+    let dnK = d.net_down / 1024;
+    if($('netUse'))$('netUse').textContent=`U: ${upK.toFixed(0)} | D: ${dnK.toFixed(0)}`;
+    
+    // push to graph arrays
+    graphPts.cpu.push(d.cpu);
+    graphPts.ram.push(d.ram);
+    graphPts.net.push(upK + dnK); // combined graph
+    
+    if(graphPts.cpu.length > 40) graphPts.cpu.shift();
+    if(graphPts.ram.length > 40) graphPts.ram.shift();
+    if(graphPts.net.length > 40) graphPts.net.shift();
+    
+    const cg = $('cpuGraph'); if(cg) cg.setAttribute('points', getSvgPts(graphPts.cpu, 100));
+    const rg = $('ramGraph'); if(rg) rg.setAttribute('points', getSvgPts(graphPts.ram, 100));
+    
+    // Auto-scale network graph max
+    let maxNet = Math.max(10, ...graphPts.net);
+    const ng = $('netGraph'); if(ng) ng.setAttribute('points', getSvgPts(graphPts.net, maxNet));
+  }catch(e){}
+}, 250);
 
 /* ═══════════════════════════════════════
    FOCUS / POMODORO
@@ -236,7 +283,9 @@ updBtns();updFD();updLog();
    SETTINGS (brightness, font sizes)
 ═══════════════════════════════════════ */
 const SETTINGS_KEY='gh_settings';
-let appSettings={brightness:100,sHdr:100,sReg:100,sTiny:100};
+let appSettings={brightness:100,sHdr:100,sReg:100,themeColor:'#ff7722',bgColor:'#08080f'};
+
+function hexToRgb(h){let c=h.replace('#','');if(c.length===3)c=c[0]+c[0]+c[1]+c[1]+c[2]+c[2];return{r:parseInt(c.substring(0,2),16),g:parseInt(c.substring(2,4),16),b:parseInt(c.substring(4,6),16)}}
 
 function loadSettings(){
   try{const s=JSON.parse(localStorage.getItem(SETTINGS_KEY));if(s)appSettings={...appSettings,...s}}catch(e){}
@@ -244,35 +293,53 @@ function loadSettings(){
   if($('setBright'))$('setBright').value=appSettings.brightness;
   if($('setHdr'))$('setHdr').value=appSettings.sHdr;
   if($('setReg'))$('setReg').value=appSettings.sReg;
-  if($('setTiny'))$('setTiny').value=appSettings.sTiny;
+  if($('setThemeColor'))$('setThemeColor').value=appSettings.themeColor;
+  if($('setBgColor'))$('setBgColor').value=appSettings.bgColor;
   updSettingsLabels();
 }
 function applySettings(){
   document.documentElement.style.filter='brightness('+(appSettings.brightness/100)+')';
   document.documentElement.style.setProperty('--s-hdr', appSettings.sHdr/100);
   document.documentElement.style.setProperty('--s-reg', appSettings.sReg/100);
-  document.documentElement.style.setProperty('--s-tiny', appSettings.sTiny/100);
+  if(appSettings.themeColor){
+    const {r,g,b} = hexToRgb(appSettings.themeColor);
+    const root = document.documentElement.style;
+    root.setProperty('--or', appSettings.themeColor);
+    root.setProperty('--or2', `rgba(${r},${g},${b},0.55)`);
+    root.setProperty('--or3', `rgba(${r},${g},${b},0.12)`);
+    root.setProperty('--or4', `rgba(${r},${g},${b},0.05)`);
+    root.setProperty('--bdr', `rgba(${r},${g},${b},0.16)`);
+  }
+  if(appSettings.bgColor){
+    const {r,g,b} = hexToRgb(appSettings.bgColor);
+    const root = document.documentElement.style;
+    root.setProperty('--bg', appSettings.bgColor);
+    root.setProperty('--bg1', `rgb(${Math.min(255,r+4)},${Math.min(255,g+4)},${Math.min(255,b+7)})`);
+    root.setProperty('--bg2', `rgb(${Math.min(255,r+8)},${Math.min(255,g+8)},${Math.min(255,b+14)})`);
+    root.setProperty('--bg3', `rgb(${Math.min(255,r+14)},${Math.min(255,g+14)},${Math.min(255,b+27)})`);
+  }
 }
 function saveSettings(){localStorage.setItem(SETTINGS_KEY,JSON.stringify(appSettings))}
 function updSettingsLabels(){
   if($('setBrightVal'))$('setBrightVal').textContent=appSettings.brightness+'%';
   if($('setHdrVal'))$('setHdrVal').textContent=appSettings.sHdr+'%';
   if($('setRegVal'))$('setRegVal').textContent=appSettings.sReg+'%';
-  if($('setTinyVal'))$('setTinyVal').textContent=appSettings.sTiny+'%';
 }
 function onSettingsChange(){
-  appSettings.brightness=parseInt($('setBright').value);
-  appSettings.sHdr=parseInt($('setHdr').value);
-  appSettings.sReg=parseInt($('setReg').value);
-  appSettings.sTiny=parseInt($('setTiny').value);
+  appSettings.brightness=parseInt($('setBright').value) || 100;
+  appSettings.sHdr=parseInt($('setHdr').value) || 100;
+  appSettings.sReg=parseInt($('setReg').value) || 100;
+  appSettings.themeColor=$('setThemeColor').value || '#ff7722';
+  appSettings.bgColor=$('setBgColor').value || '#08080f';
   applySettings();saveSettings();updSettingsLabels();
 }
 function resetSettings(){
-  appSettings={brightness:100,sHdr:100,sReg:100,sTiny:100};
+  appSettings={brightness:100,sHdr:100,sReg:100,themeColor:'#ff7722',bgColor:'#08080f'};
   if($('setBright'))$('setBright').value=100;
   if($('setHdr'))$('setHdr').value=100;
   if($('setReg'))$('setReg').value=100;
-  if($('setTiny'))$('setTiny').value=100;
+  if($('setThemeColor'))$('setThemeColor').value='#ff7722';
+  if($('setBgColor'))$('setBgColor').value='#08080f';
   applySettings();saveSettings();updSettingsLabels();toast('// settings reset');
 }
 setTimeout(loadSettings,100);
