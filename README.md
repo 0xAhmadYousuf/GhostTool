@@ -1,84 +1,48 @@
-# GhostTool // Developer Utility Hub
+<div align="center">
+  <img src="static/logo.ico" width="80" height="80" alt="GhostTool Logo">
+  <h1>GhostTool</h1>
+  <p><i>A humble, lightweight utility hub for developers and power users.</i></p>
 
-GhostTool is a lightweight, all-in-one standalone utility hub built for developers, designers, and power users. Created by **0xAhmadYousuf**, it's designed as a single-page local desktop application with a cyberpunk-inspired dark CRT aesthetic. It consolidates 23 essential tools into one blazing fast interface—no cloud dependencies, no tracking, and everything happens instantly on your machine.
+  <!-- Badges -->
+  <a href="https://github.com/0xAhmadYousuf/GhostTool/releases"><img src="https://img.shields.io/github/v/release/0xAhmadYousuf/GhostTool?style=flat-square&color=ff7722" alt="Release"></a>
+  <a href="https://github.com/0xAhmadYousuf/GhostTool/blob/main/LICENSE"><img src="https://img.shields.io/github/license/0xAhmadYousuf/GhostTool?style=flat-square&color=18f0d8" alt="License"></a>
+  <a href="https://github.com/0xAhmadYousuf/GhostTool/actions"><img src="https://img.shields.io/github/actions/workflow/status/0xAhmadYousuf/GhostTool/release.yml?style=flat-square" alt="Build Status"></a>
+</div>
 
-## Features
+---
 
-- **Blazing Fast & Local:** Entirely powered by a lightweight Flask backend and PyWebView frontend. No cloud latency.
-- **Always On Top:** Pin the app above all other windows with a single click.
-- **Customizable UI:** Built-in settings control panel for scaling UI size and adjusting brightness to match your environment.
-- **No Console Clutter:** The app runs silently without splashing terminal windows in the background.
+GhostTool is a small, standalone desktop application consolidating 23+ essential offline utilities (JSON formatters, diff viewers, local world clocks, hardware telemetry, etc.) into a fast, single-page UI. Built entirely with Python, Flask, and PyWebView, it requires zero cloud dependencies and respects your privacy.
 
-## The Toolbox (23 Tools Included)
+## ✨ Getting Started
 
-### 💻 Developer Tools
+Everything is built to run natively and instantly on your machine.
 
-- **Code Diff Viewer:** Compare two blocks of code cleanly using Inline or Unified modes.
-- **JSON Formatter:** Format, minify, un-minify, and validate JSON payloads instantly.
-- **Regex Tester:** Test JavaScript regular expressions with highlighting and presets (Email, URL, IP).
-- **Hash Generator:** Compute MD5, SHA-1, SHA-256, SHA-384, and SHA-512 hashes instantly (using Web Crypto API).
-- **Base64 Encode/Decode:** Two-way Base64 encoding.
-- **URL Encode/Decode:** Safely encode or decode URL components.
-- **Case Converter:** Instantly switch text between camelCase, snake_case, CONSTANT_CASE, kebab-case, and Title Case.
-- **HTTP Status Codes:** A fast, searchable reference guide for standard HTTP status codes.
-
-### 🎨 Design & Authoring
-
-- **Color Picker:** Hex, RGB, and HSL converter with a swatches palette.
-- **Markdown Preview:** Write markdown with a live rendered preview and instantly copy the generated HTML.
-- **Lorem Ipsum Generator:** Generate placeholder text by words, sentences, or paragraphs.
-
-### ⏰ Time & Productivity
-
-- **Pomodoro / Focus Mode:** Stay focused with 25-minute sprints, short/long breaks, or custom flow states. Includes a full-screen distraction-free overlay.
-- **Stopwatch:** Standard stopwatch with lap tracking.
-- **World Clocks:** Track timezones from New York to Tokyo. Completely customizable and removable.
-- **Unix Timestamp Converter:** Instantly convert Unix timestamps into human-readable local and global times.
-- **System Metrics:** Live uptime tracker and quick-copy current Unix timestamp.
-- **Persistent Notes:** A scratchpad for pasting quick queries or reminders—autosaves locally to the browser.
-- **Quick Calculator:** On-the-fly math evaluator that displays the result along with Hex, Octal, and Binary conversions.
-
-### ⚡ System Automation
-
-- **Shutdown Timer:** Set your PC to shutdown gracefully after X hours/minutes.
-- **Schedule Shutdown:** Select an exact time of day for your system to shutdown.
-- **Countdown Timer:** Countdown to a specific date/time in the future.
-
-### 🔒 Security
-
-- **Password Generator:** Securely generate random passwords and tokens with exact character rules and a strength meter. Can also generate bulk batches and UUIDs.
-
-## Installation & Running
-
-### Requirements
+### Prerequisites
 
 - Python 3.10+
-- OS: Windows, macOS, or Linux
+- Works on **Windows**, **macOS**, and **Linux**
 
-### Setup
+### Installation
 
-Run the following command to install the required libraries (`Flask` and `pywebview`). GhostTool will automatically attempt to install these on the first run, but you can install them manually:
-
-```bash
-pip install flask pywebview
-```
-
-### Launch
-
-To open GhostTool, run the main Python script:
+Clone the repository and install the dependencies:
 
 ```bash
+git clone https://github.com/0xAhmadYousuf/GhostTool.git
+cd GhostTool
+pip install -r requirements.txt
 python main.py
 ```
 
-It will launch a native desktop window. All Python console logs have been suppressed for a cleaner user experience. Ensure `static/logo.ico` is in the same directory for the app icon to display properly.
+*Alternatively, download the pre-compiled, zero-dependency standalone executables from the [Releases](https://github.com/0xAhmadYousuf/GhostTool/releases) page.*
 
-## Tech Stack
+## 🤝 Contributing & Security
 
-- **Backend:** Python 3, Flask, PyWebView
-- **Frontend:** HTML5, Vanilla JavaScript, Vanilla CSS
-- **Design:** Single-page architecture (SPA), custom theming (`JetBrains Mono` font), custom SVG iconography.
+Because this project aims to remain extremely lightweight and humble, we try to avoid bloated documentation. Instead, please refer to the following guidelines if you wish to help or report an issue:
 
-## License
+- **[CONTRIBUTING.md](CONTRIBUTING.md)**: Guidelines on how to submit pull requests and add new tools.
+- **[SECURITY.md](SECURITY.md)**: Information about supported versions and how to report vulnerabilities securely.
 
-MIT License.
+---
+<div align="center">
+  <i>Created by <a href="https://github.com/0xAhmadYousuf">0xAhmadYousuf</a></i>
+</div>
