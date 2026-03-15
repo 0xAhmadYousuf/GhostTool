@@ -1,32 +1,41 @@
 <div align="center">
-  <img src="assets/logo.svg" width="300" height="300" alt="GhostTool Logo">
+  <img src="assets/logo.svg" width="220" height="220" alt="GhostTool Logo">
   <h1>GhostTool</h1>
-  <p><i>A humble, lightweight utility hub for developers and power users.</i></p>
+  <p><i>A powerful, offline, all-in-one utility hub for everyone.</i></p>
 
   <!-- Badges -->
-  <a href="https://github.com/0xAhmadYousuf/GhostTool/releases"><img src="https://img.shields.io/github/v/release/0xAhmadYousuf/GhostTool?style=flat-square&color=ff7722" alt="Release"></a>
-  <a href="https://github.com/0xAhmadYousuf/GhostTool/blob/main/LICENSE"><img src="https://img.shields.io/github/license/0xAhmadYousuf/GhostTool?style=flat-square&color=00aa99" alt="License"></a>
-  <a href="https://github.com/0xAhmadYousuf/GhostTool/actions"><img src="https://img.shields.io/github/actions/workflow/status/0xAhmadYousuf/GhostTool/release.yml?style=flat-square" alt="Build Status"></a>
+  <a href="https://github.com/0xAhmadYousuf/GhostTool/releases/tag/v0.0.1-beta"><img src="https://img.shields.io/badge/version-v0.0.1--beta-ff7722?style=for-the-badge" alt="Version"></a>
+  <a href="https://github.com/0xAhmadYousuf/GhostTool/releases"><img src="https://img.shields.io/github/downloads/0xAhmadYousuf/GhostTool/total?style=for-the-badge&color=00aa99" alt="Downloads"></a>
+  <a href="https://github.com/0xAhmadYousuf/GhostTool/blob/main/LICENSE"><img src="https://img.shields.io/github/license/0xAhmadYousuf/GhostTool?style=for-the-badge&color=18f0d8" alt="License"></a>
 </div>
+
+<br>
+
+GhostTool is a fast, standalone desktop application that packs **23+ essential offline utilities** into one clean, distraction-free window. No internet required, no tracking, and no complex installations—just pure utility that runs securely strictly on your machine.
+
+Whether you need to instantly compare text, check your computer's health, securely encrypt a password, or focus using a built-in Pomodoro timer—GhostTool has it natively built-in for you.
 
 ---
 
-GhostTool is a small, standalone desktop application consolidating 23+ essential offline utilities (JSON formatters, diff viewers, local world clocks, hardware telemetry, etc.) into a fast, single-page UI. Built entirely with Python, Flask, and PyWebView, it requires zero cloud dependencies and respects your privacy.
+### <img src="assets/download.svg" width="35" style="vertical-align: middle;"> Get GhostTool (For Everyday Users)
 
-## ✨ Getting Started
+You **do not** need to be a programmer to use GhostTool. It comes as a simple, ready-to-use application.
 
-You have two choices: download a ready-to-use standalone executable, or run and build it from the source code.
+1. **[Download the Latest Release (v0.0.1-beta)](https://github.com/0xAhmadYousuf/GhostTool/releases/tag/v0.0.1-beta)**
+2. Choose your operating system and download its specific file:
+   <br><br>
+   &nbsp;&nbsp;&nbsp;&nbsp; <img src="assets/os_win.svg" height="40" style="vertical-align: middle;"> **Windows:** Download the `.exe` file.<br><br>
+   &nbsp;&nbsp;&nbsp;&nbsp; <img src="assets/os_mac.svg" height="45" style="vertical-align: middle;"> **Mac:** Download the `.app.tar.gz` file.<br><br>
+   &nbsp;&nbsp;&nbsp;&nbsp; <img src="assets/os_lin.png" height="45" style="vertical-align: middle;"> **Linux:** Download the `.bin` file.<br><br>
+3. Double-click the downloaded file to open GhostTool. That's it! No installation wizards or setup required.
 
-### Option 1: Download Standalone Executable (Recommended)
-GhostTool compiles into a single, zero-dependency binary (Windows `.exe`, Linux `.bin`, macOS `.app`). 
-Simply download the latest build for your operating system from the **[Releases](https://github.com/0xAhmadYousuf/GhostTool/releases)** page and double-click to run!
+<br>
 
-### Option 2: Run & Build From Source
-If you prefer to audit the raw Python code or build the binary yourself:
+### <img src="assets/code.svg" width="35" style="vertical-align: middle;"> Build From Source (For Power Users)
 
-**Prerequisites:**
-- Python 3.10+
-- Git
+If you prefer to audit the raw Python code or build the binary engine yourself from scratch:
+
+**Prerequisites:** Python 3.10+ and Git
 
 ```bash
 # 1. Clone the repository
@@ -39,21 +48,26 @@ pip install -r requirements.txt
 # 3. Run the app natively
 python main.py
 
-# 4. (Optional) Compile your own portable executable using Nuitka
+# 4. Optional: Compile a portable executable using Nuitka
 python -m nuitka --assume-yes-for-downloads --standalone --onefile --include-data-dir=static=static --include-data-dir=templates=templates main.py
 ```
 
-## ⭐ Support
-If you find GhostTool helpful, please consider leaving a **Star** on this repository! It helps the project grow and motivates further development.
+<br>
 
-## 🤝 Contributing & Security
+---
+
+### <img src="assets/star.svg" width="35" style="vertical-align: middle;"> Support The Project
+If you find GhostTool helpful, please consider leaving a **Star** on this repository! It helps the project grow and greatly motivates further development and support.
+
+### <img src="assets/handshake.svg" width="35" style="vertical-align: middle;"> Contributing & Security
 
 Because this project aims to remain extremely lightweight and humble, we try to avoid bloated documentation. Instead, please refer to the following guidelines if you wish to help or report an issue:
 
-- **[CONTRIBUTING.md](CONTRIBUTING.md)**: Guidelines on how to submit pull requests and add new tools.
+- **[CONTRIBUTING.md](CONTRIBUTING.md)**: Guidelines on how to submit pull requests and add new tool plugins.
 - **[SECURITY.md](SECURITY.md)**: Information about supported versions and how to report vulnerabilities securely.
 
----
+<br>
+
 <div align="center">
-  <i>Created by <a href="https://github.com/0xAhmadYousuf">0xAhmadYousuf</a></i>
+  <i>Designed and Built by <a href="https://github.com/0xAhmadYousuf">0xAhmadYousuf</a></i>
 </div>
