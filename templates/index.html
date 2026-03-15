@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>GhostTool</title>
+<meta name="description" content="GhostTool — developer utility hub with 23 tools."/>
+<link rel="stylesheet" href="/static/style.css"/>
+</head>
+<body>
+<div class="app">
+
+<!-- ══ TOP BAR ══ -->
+<div class="top-bar">
+  <span class="app-logo">GHOST TOOL</span>
+  <span class="app-sub">// 0xAhmadYousuf</span>
+  <span class="active-tool" id="activeToolName">SHUTDOWN TIMER</span>
+  <!-- Pin -->
+  <button class="top-icon-btn" id="pinBtn" onclick="togglePin()" title="Always on top">
+    <svg viewBox="0 0 24 24"><line x1="12" y1="17" x2="12" y2="22"/><path d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1v4.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24Z"/></svg>
+  </button>
+  <!-- Toolbox -->
+  <button class="top-icon-btn" onclick="openToolbox()" title="Toolbox">
+    <svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="2" y1="12" x2="22" y2="12"/></svg>
+  </button>
+</div>
+
+<!-- ══ ALERT (shared) ══ -->
+<div class="alert" id="alrt" style="margin:4px 12px 0;flex-shrink:0"></div>
+
+<!-- ══ MAIN CONTENT ══ -->
+<div class="main-content">
+
+<!-- ─── SHUTDOWN ─── -->
+<div class="tool-panel active" id="tool-shutdown">
+  <div class="card">
+    <div class="card-hdr">SHUTDOWN TIMER</div>
+    <div id="cddisp" style="display:none;margin-bottom:12px">
+      <div class="big-timer" id="cdbig">00:00:00</div>
+      <div class="status-line"><span class="dot" id="sdot"></span><span id="stxt">IDLE</span></div>
+      <div class="pb-wrap"><div class="pb" id="sdpb" style="width:0%"></div></div>
+    </div>
+    <div id="insec">
+      <div class="tri">
+        <div class="ti"><span class="lbl">Hours</span><div class="ti-inner"><button class="ti-btn ti-up" onclick="stepField('iH',1)"></button><input type="number" id="iH" min="0" max="23" value="0"/><button class="ti-btn ti-dn" onclick="stepField('iH',-1)"></button></div></div>
+        <div class="ti"><span class="lbl">Minutes</span><div class="ti-inner"><button class="ti-btn ti-up" onclick="stepField('iM',1)"></button><input type="number" id="iM" min="0" max="59" value="5"/><button class="ti-btn ti-dn" onclick="stepField('iM',-1)"></button></div></div>
+        <div class="ti"><span class="lbl">Seconds</span><div class="ti-inner"><button class="ti-btn ti-up" onclick="stepField('iS',1)"></button><input type="number" id="iS" min="0" max="59" value="0"/><button class="ti-btn ti-dn" onclick="stepField('iS',-1)"></button></div></div>
+      </div>
+      <div class="presets"><span class="plbl">QUICK:</span><button class="preset" onclick="sp(0,5,0)">5m</button><button class="preset" onclick="sp(0,15,0)">15m</button><button class="preset" onclick="sp(0,30,0)">30m</button><button class="preset" onclick="sp(1,0,0)">1h</button><button class="preset" onclick="sp(2,0,0)">2h</button><button class="preset" onclick="sp(8,0,0)">8h</button></div>
+    </div>
+    <div class="brow">
+      <button class="btn pri full" id="bStart" onclick="onStart()">START TIMER</button>
+      <button class="btn" id="bPause" onclick="onPause()" disabled>PAUSE</button>
+      <button class="btn dng" id="bStop" onclick="onStop()" disabled>CANCEL</button>
+      <button class="btn full" onclick="onReset()">RESET</button>
+    </div>
+    <div class="gap-info">// Grace screen appears when timer ends. Save all work before arming.</div>
+  </div>
+</div>
+
+<!-- ─── FOCUS ─── -->
+<div class="tool-panel" id="tool-focus">
+  <div class="card">
+    <div class="card-hdr">FOCUS MODE</div>
+    <div class="fcd" id="fcd">25:00</div>
+    <div class="flbl" id="flbl">POMODORO -- READY</div>
+    <div class="mgrid">
+      <button class="mb act" onclick="setFM('pomo',this)"><span class="mn">POMO</span><span class="mt2">25 min</span></button>
+      <button class="mb" onclick="setFM('short',this)"><span class="mn">SHORT BRK</span><span class="mt2">5 min</span></button>
+      <button class="mb" onclick="setFM('long',this)"><span class="mn">LONG BRK</span><span class="mt2">15 min</span></button>
+      <button class="mb" onclick="setFM('flow',this)"><span class="mn">FLOW</span><span class="mt2">90 min</span></button>
+      <button class="mb" onclick="setFM('sprint',this)"><span class="mn">SPRINT</span><span class="mt2">52 min</span></button>
+      <button class="mb" id="mbCustom" onclick="setFM('custom',this)"><span class="mn">CUSTOM</span><span class="mt2" id="cml">45 min</span></button>
+    </div>
+    <div id="custBlock" style="display:none;margin-bottom:10px">
+      <span class="lbl">Custom Duration</span>
+      <div class="stepper-row"><button class="step-btn" onclick="stepCustom(-15)">-15</button><button class="step-btn" onclick="stepCustom(-5)">-5</button><button class="step-btn" onclick="stepCustom(-1)">-1</button><div class="step-val" id="custVal">45</div><button class="step-btn" onclick="stepCustom(1)">+1</button><button class="step-btn" onclick="stepCustom(5)">+5</button><button class="step-btn" onclick="stepCustom(15)">+15</button></div>
+    </div>
+    <div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;font-size:9px;color:var(--mt);margin-bottom:4px;font-weight:700"><span>ELAPSED</span><span id="felap">0:00</span></div><div class="pb-wrap"><div class="pb cy" id="fpb" style="width:0%"></div></div></div>
+    <div class="brow">
+      <button class="btn cyn" id="bFS" onclick="onFStart()">START</button>
+      <button class="btn" id="bFP" onclick="onFPause()" disabled>PAUSE</button>
+      <button class="btn" onclick="toggleFOv()">FULLSCREEN</button>
+      <button class="btn dng" onclick="onFStop()">STOP</button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-hdr">SESSION LOG</div>
+    <div class="stat-row"><span>POMOS: <b id="tpom" style="color:var(--or)">0</b></span><span>FOCUS: <b id="tfoc" style="color:var(--cyn)">0m</b></span><span>STREAK: <b id="tstr" style="color:var(--grn)">0</b></span></div>
+    <div class="slog" id="slog"><div style="opacity:.35;font-size:10px">// no sessions yet</div></div>
+  </div>
+</div>
+
+<!-- ─── CLOCKS ─── -->
+<div class="tool-panel" id="tool-clocks">
+  <div class="card">
+    <div class="card-hdr">LOCAL TIME</div>
+    <div class="clocks-grid"><div class="clock-card local-card"><div class="cc-city"><b>LOCAL / Your System</b></div><div class="cc-time" id="ck-local">--:--:--</div><div class="cc-date" id="ck-local-d">---</div></div></div>
+  </div>
+  <div class="card">
+    <div class="card-hdr">WORLD CLOCKS</div>
+    <div class="clocks-grid" id="clocksGrid"></div>
+  </div>
+  <div class="card">
+    <div class="card-hdr">ADD TIMEZONE</div>
+    <div class="srow">
+      <select class="sinp" id="tzSelect" style="flex:1">
+        <option value="">-- pick a timezone --</option>
+        <optgroup label="Americas"><option value="America/New_York">New York</option><option value="America/Chicago">Chicago</option><option value="America/Denver">Denver</option><option value="America/Los_Angeles">Los Angeles</option><option value="America/Sao_Paulo">Sao Paulo</option><option value="America/Toronto">Toronto</option></optgroup>
+        <optgroup label="Europe"><option value="Europe/London">London</option><option value="Europe/Paris">Paris</option><option value="Europe/Berlin">Berlin</option><option value="Europe/Moscow">Moscow</option><option value="Europe/Istanbul">Istanbul</option><option value="Europe/Amsterdam">Amsterdam</option></optgroup>
+        <optgroup label="Asia"><option value="Asia/Dubai">Dubai</option><option value="Asia/Kolkata">Kolkata</option><option value="Asia/Dhaka">Dhaka</option><option value="Asia/Bangkok">Bangkok</option><option value="Asia/Jakarta">Jakarta</option><option value="Asia/Singapore">Singapore</option><option value="Asia/Tokyo">Tokyo</option><option value="Asia/Seoul">Seoul</option><option value="Asia/Shanghai">Shanghai</option><option value="Asia/Karachi">Karachi</option><option value="Asia/Riyadh">Riyadh</option></optgroup>
+        <optgroup label="Pacific/Africa"><option value="Australia/Sydney">Sydney</option><option value="Pacific/Auckland">Auckland</option><option value="Africa/Cairo">Cairo</option><option value="Africa/Nairobi">Nairobi</option><option value="Africa/Lagos">Lagos</option></optgroup>
+      </select>
+      <button class="btn pri" onclick="addClock()" style="flex:none">+ ADD</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── SCHEDULE ─── -->
+<div class="tool-panel" id="tool-schedule">
+  <div class="card">
+    <div class="card-hdr">SCHEDULE SHUTDOWN AT TIME</div>
+    <div class="sched-step"><button class="sched-step-btn" onclick="stepSchedH(-1)">-</button><div class="sched-step-inner"><span class="sched-step-h" id="ssH">09</span><span class="sched-colon">:</span><span class="sched-step-m" id="ssM">00</span></div><button class="sched-step-btn" onclick="stepSchedM(-5)">-5m</button><button class="sched-step-btn" onclick="stepSchedM(5)">+5m</button><button class="sched-step-btn" onclick="stepSchedH(1)">+</button></div>
+    <div class="srow"><button class="btn pri full" onclick="addSched()">+ SCHEDULE</button></div>
+    <div class="slst" id="slst"><div style="opacity:.3;font-size:10px">// none</div></div>
+  </div>
+</div>
+
+<!-- ─── COUNTDOWN ─── -->
+<div class="tool-panel" id="tool-countdown">
+  <div class="card">
+    <div class="card-hdr">COUNTDOWN TO TARGET DATE</div>
+    <div class="srow"><input class="sinp" type="datetime-local" id="ctgt" style="flex:1"/><button class="btn" onclick="setCt()" style="flex:none">SET</button></div>
+    <div class="ctdisp" id="ctdisp"></div>
+  </div>
+</div>
+
+<!-- ─── NOTES ─── -->
+<div class="tool-panel" id="tool-notes">
+  <div class="card" style="display:flex;flex-direction:column">
+    <div class="card-hdr">SCRATCHPAD</div>
+    <textarea class="notes-area" id="notesArea" placeholder="// paste commands, ideas, notes, reminders...&#10;// auto-saved to local storage"></textarea>
+    <div class="notes-meta" id="notesMeta">0 chars | 0 words | 1 lines | auto-saved</div>
+    <div class="brow" style="margin-top:8px;margin-bottom:0"><button class="btn" onclick="copyNotes()">COPY ALL</button><button class="btn dng" onclick="clearNotes()">CLEAR</button></div>
+  </div>
+</div>
+
+<!-- ─── METRICS ─── -->
+<div class="tool-panel" id="tool-metrics">
+  <div class="card">
+    <div class="card-hdr">SYSTEM METRICS</div>
+    <div class="tgrid">
+      <div class="tcrd" onclick="copyTs()"><div class="tn">UNIX TIMESTAMP</div><div class="tv" id="dunix" style="font-size:14px">--</div><div class="ts2">click to copy</div></div>
+      <div class="tcrd"><div class="tn">SESSION UPTIME</div><div class="tv" id="dsess">00:00:00</div><div class="ts2">time app open</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── UNIX CONVERTER ─── -->
+<div class="tool-panel" id="tool-unix">
+  <div class="card">
+    <div class="card-hdr">UNIX TIMESTAMP CONVERTER</div>
+    <div class="srow"><input class="sinp" type="number" id="unixIn" placeholder="Enter unix timestamp..." style="flex:1"/><button class="btn" onclick="convertUnix()" style="flex:none">CONVERT</button></div>
+    <div class="conv-out" id="convOut" style="display:none"></div>
+    <div class="gap-info" style="margin-top:6px">// current unix: <span id="curUnix">--</span></div>
+  </div>
+</div>
+
+<!-- ─── DIFF VIEWER (tabbed) ─── -->
+<div class="tool-panel" id="tool-diff">
+  <div class="card">
+    <div class="card-hdr">CODE DIFF VIEWER</div>
+    <div class="tab-bar">
+      <button class="tab-btn act" data-tab-btn="diff" data-tab-target="diffA" onclick="switchTab('diff','diffA')">ORIGINAL (A)</button>
+      <button class="tab-btn" data-tab-btn="diff" data-tab-target="diffB" onclick="switchTab('diff','diffB')">MODIFIED (B)</button>
+      <button class="tab-btn" data-tab-btn="diff" data-tab-target="diffOut" onclick="switchTab('diff','diffOut')">DIFF OUTPUT</button>
+    </div>
+    <div data-tab-group="diff" data-tab-id="diffA" style="display:block">
+      <textarea class="diff-area full-area" id="diffA" placeholder="// paste original code here..."></textarea>
+    </div>
+    <div data-tab-group="diff" data-tab-id="diffB" style="display:none">
+      <textarea class="diff-area full-area" id="diffB" placeholder="// paste modified code here..."></textarea>
+    </div>
+    <div data-tab-group="diff" data-tab-id="diffOut" style="display:none">
+      <div class="diff-controls">
+        <div style="display:flex;gap:4px"><button class="dmode-btn act" onclick="setDiffMode('unified',this)">UNIFIED</button><button class="dmode-btn" onclick="setDiffMode('inline',this)">INLINE</button></div>
+        <label style="display:flex;align-items:center;gap:3px;font-size:8px;color:var(--mt);cursor:pointer;font-weight:700"><input type="checkbox" id="diffIgnWs" onchange="runDiff()"/>WS</label>
+        <label style="display:flex;align-items:center;gap:3px;font-size:8px;color:var(--mt);cursor:pointer;font-weight:700"><input type="checkbox" id="diffIgnCase" onchange="runDiff()"/>CASE</label>
+        <label style="display:flex;align-items:center;gap:3px;font-size:8px;color:var(--mt);font-weight:700">CTX<input type="number" id="diffCtx" value="3" min="0" max="20" style="width:32px" onchange="runDiff()"/></label>
+        <div class="diff-stats"><span class="diff-stat-add" id="dStatAdd">+0</span><span class="diff-stat-rem" id="dStatRem">-0</span></div>
+        <button class="btn pri sm" onclick="runDiff()" style="margin-left:auto">RUN DIFF</button>
+      </div>
+      <div class="diff-output" id="diffOutput"><div class="diff-empty">// paste code in A and B tabs, then click RUN DIFF</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── COLOR PICKER ─── -->
+<div class="tool-panel" id="tool-color">
+  <div class="card">
+    <div class="card-hdr">COLOR PICKER / CONVERTER</div>
+    <div class="color-preview" id="colorPreview" style="background:#ff7722" onclick="pickColor()"></div>
+    <input type="color" id="colorInput" value="#ff7722" oninput="updColor()" style="position:absolute;opacity:0;pointer-events:none"/>
+    <div class="color-inputs">
+      <div class="color-val" onclick="copyColorVal('cvHex')"><span class="cv-lbl">HEX</span><span class="cv-txt" id="cvHex">#FF7722</span></div>
+      <div class="color-val" onclick="copyColorVal('cvRgb')"><span class="cv-lbl">RGB</span><span class="cv-txt" id="cvRgb">rgb(255, 119, 34)</span></div>
+      <div class="color-val" onclick="copyColorVal('cvHsl')"><span class="cv-lbl">HSL</span><span class="cv-txt" id="cvHsl">hsl(23, 100%, 57%)</span></div>
+    </div>
+    <div class="gap-info" id="contrastInfo" style="margin-bottom:8px"></div>
+    <div class="srow"><button class="btn sm" onclick="addColorHistory()">SAVE TO PALETTE</button></div>
+    <div class="color-history" id="colorHist"></div>
+  </div>
+</div>
+
+<!-- ─── BASE64 ─── -->
+<div class="tool-panel" id="tool-base64">
+  <div class="card">
+    <div class="card-hdr">BASE64 ENCODE / DECODE</div>
+    <textarea class="tool-in" id="b64In" placeholder="// paste text or base64 string..." style="margin-bottom:8px"></textarea>
+    <div class="brow"><button class="btn pri" onclick="b64Encode()">ENCODE</button><button class="btn" onclick="b64Decode()">DECODE</button></div>
+    <span class="lbl">OUTPUT</span>
+    <div class="tool-out" id="b64Out"></div>
+    <div class="brow" style="margin-top:8px;margin-bottom:0"><button class="btn full" onclick="b64Copy()">COPY OUTPUT</button></div>
+  </div>
+</div>
+
+<!-- ─── PASSWORD GEN ─── -->
+<div class="tool-panel" id="tool-passgen">
+  <div class="card">
+    <div class="card-hdr">PASSWORD / TOKEN GENERATOR</div>
+    <div class="pw-output" id="pwOutput" onclick="copyPw()">// click GENERATE</div>
+    <div class="pw-strength"><div class="pw-strength-bar" id="pwStrBar" style="width:0"></div></div>
+    <div class="range-row" style="margin-top:10px"><span class="lbl" style="margin:0">LENGTH</span><input type="range" id="pwRange" min="8" max="128" value="16" oninput="updPwLen()"/><span class="range-val" id="pwLenVal">16</span></div>
+    <div class="toggle-row">
+      <span class="lbl" style="margin:0">OPTIONS:</span>
+      <button class="toggle-chip on" id="pwUpper" onclick="togglePwOpt('pwUpper')">A-Z</button>
+      <button class="toggle-chip on" id="pwLower" onclick="togglePwOpt('pwLower')">a-z</button>
+      <button class="toggle-chip on" id="pwNum" onclick="togglePwOpt('pwNum')">0-9</button>
+      <button class="toggle-chip" id="pwSym" onclick="togglePwOpt('pwSym')">!@#</button>
+    </div>
+    <div class="brow">
+      <button class="btn pri" onclick="genPw()">GENERATE</button>
+      <button class="btn" onclick="genUuid()">UUID v4</button>
+      <button class="btn" onclick="genBulk()">BULK</button>
+      <select class="sinp" id="pwBulkCount" style="width:60px"><option value="5">x5</option><option value="10">x10</option><option value="20">x20</option></select>
+    </div>
+    <div class="pw-list" id="pwList"></div>
+  </div>
+</div>
+
+<!-- ─── JSON FORMATTER ─── -->
+<div class="tool-panel" id="tool-json">
+  <div class="card">
+    <div class="card-hdr">JSON FORMATTER / VALIDATOR</div>
+    <textarea class="tool-in" id="jsonIn" placeholder='// paste JSON here...\n{"key": "value"}' style="margin-bottom:8px"></textarea>
+    <div class="brow">
+      <button class="btn pri" onclick="jsonFormat()">FORMAT</button>
+      <button class="btn" onclick="jsonMinify()">MINIFY</button>
+      <select class="sinp" id="jsonIndent" style="width:60px"><option value="2">2 sp</option><option value="4">4 sp</option><option value="tab">Tab</option></select>
+      <button class="btn" onclick="jsonCopy()">COPY</button>
+    </div>
+    <span class="lbl">OUTPUT</span>
+    <div class="json-output" id="jsonOut"></div>
+  </div>
+</div>
+
+<!-- ─── URL ENCODE/DECODE ─── -->
+<div class="tool-panel" id="tool-urltool">
+  <div class="card">
+    <div class="card-hdr">URL ENCODE / DECODE</div>
+    <textarea class="tool-in" id="urlIn" placeholder="// paste URL or text..." style="margin-bottom:8px;min-height:50px"></textarea>
+    <div class="brow">
+      <button class="btn pri" onclick="urlEncode()">ENCODE</button>
+      <button class="btn" onclick="urlDecode()">DECODE</button>
+      <button class="btn" onclick="urlParse()">PARSE URL</button>
+      <button class="btn" onclick="urlCopy()">COPY</button>
+    </div>
+    <span class="lbl">OUTPUT</span>
+    <div class="tool-out" id="urlOut"></div>
+  </div>
+</div>
+
+<!-- ─── HASH GENERATOR ─── -->
+<div class="tool-panel" id="tool-hash">
+  <div class="card">
+    <div class="card-hdr">HASH GENERATOR</div>
+    <div class="srow"><input class="sinp" id="hashIn" placeholder="Type text to hash..." style="flex:1" oninput="genHash()"/></div>
+    <div id="hashResults"></div>
+    <div style="margin-top:10px"><span class="lbl">COMPARE HASH</span><div class="srow"><input class="sinp" id="hashCompare" placeholder="// paste hash to verify match..." style="flex:1"/><button class="btn sm" onclick="genHash()">CHECK</button></div></div>
+  </div>
+</div>
+
+<!-- ─── LOREM IPSUM ─── -->
+<div class="tool-panel" id="tool-lorem">
+  <div class="card">
+    <div class="card-hdr">LOREM IPSUM GENERATOR</div>
+    <div class="srow">
+      <select class="sinp" id="loremUnit" style="width:100px"><option value="paragraphs">Paragraphs</option><option value="sentences">Sentences</option><option value="words">Words</option></select>
+      <input class="sinp" type="number" id="loremCount" value="3" min="1" max="50" style="width:60px"/>
+      <button class="btn pri" onclick="genLorem()">GENERATE</button>
+      <button class="btn" onclick="loremCopy()">COPY</button>
+    </div>
+    <div class="lorem-out" id="loremOut">// click GENERATE</div>
+  </div>
+</div>
+
+<!-- ─── REGEX TESTER ─── -->
+<div class="tool-panel" id="tool-regex">
+  <div class="card">
+    <div class="card-hdr">REGEX TESTER</div>
+    <div class="srow"><input class="sinp" id="regexPattern" placeholder="// regex pattern..." style="flex:1" oninput="testRegex()"/></div>
+    <div class="toggle-row">
+      <span class="lbl" style="margin:0">FLAGS:</span>
+      <button class="toggle-chip on" id="rgG" onclick="toggleRegexFlag('rgG');testRegex()">g</button>
+      <button class="toggle-chip" id="rgI" onclick="toggleRegexFlag('rgI');testRegex()">i</button>
+      <button class="toggle-chip" id="rgM" onclick="toggleRegexFlag('rgM');testRegex()">m</button>
+      <button class="toggle-chip" id="rgS" onclick="toggleRegexFlag('rgS');testRegex()">s</button>
+      <span class="lbl" style="margin:0;margin-left:8px">PRESETS:</span>
+      <button class="preset" onclick="setRegexPreset('email');testRegex()">email</button>
+      <button class="preset" onclick="setRegexPreset('url');testRegex()">url</button>
+      <button class="preset" onclick="setRegexPreset('ip');testRegex()">ip</button>
+      <button class="preset" onclick="setRegexPreset('date');testRegex()">date</button>
+    </div>
+    <textarea class="tool-in" id="regexTest" placeholder="// paste test string..." style="margin-bottom:8px;min-height:60px" oninput="testRegex()"></textarea>
+    <span class="lbl">HIGHLIGHTED OUTPUT</span>
+    <div class="regex-output" id="regexOutput"></div>
+    <div class="regex-matches" id="regexMatches"></div>
+  </div>
+</div>
+
+<!-- ─── CALCULATOR ─── -->
+<div class="tool-panel" id="tool-calc">
+  <div class="card">
+    <div class="card-hdr">QUICK CALCULATOR</div>
+    <div class="srow"><input class="sinp" id="calcIn" placeholder="// type expression: 2**10, Math.sqrt(144)..." style="flex:1" onkeydown="if(event.key==='Enter')calcEval()"/><button class="btn pri" onclick="calcEval()" style="flex:none">=</button></div>
+    <div class="calc-result" id="calcResult">0</div>
+    <div class="tgrid" style="margin-top:8px">
+      <div class="tcrd"><div class="tn">HEX</div><div class="tv" id="calcHex" style="font-size:14px">0x0</div></div>
+      <div class="tcrd"><div class="tn">OCT</div><div class="tv" id="calcOct" style="font-size:14px">0o0</div></div>
+    </div>
+    <div style="margin-top:4px"><div class="tcrd"><div class="tn">BIN</div><div class="tv" id="calcBin" style="font-size:12px;word-break:break-all">0b0</div></div></div>
+    <div style="margin-top:8px"><span class="lbl">HISTORY</span><div class="calc-history" id="calcHist"></div></div>
+  </div>
+</div>
+
+<!-- ─── STOPWATCH ─── -->
+<div class="tool-panel" id="tool-stopwatch">
+  <div class="card">
+    <div class="card-hdr">STOPWATCH</div>
+    <div class="sw-display" id="swDisplay">00:00<span class="sw-ms">.00</span></div>
+    <div class="brow">
+      <button class="btn cyn" id="swBtn" onclick="swToggle()">START</button>
+      <button class="btn" onclick="swLap()">LAP</button>
+      <button class="btn dng full" onclick="swReset()">RESET</button>
+    </div>
+    <div class="sw-laps" id="swLapList"></div>
+  </div>
+</div>
+
+<!-- ─── HTTP STATUS CODES ─── -->
+<div class="tool-panel" id="tool-http">
+  <div class="card">
+    <div class="card-hdr">HTTP STATUS CODES</div>
+    <div class="srow"><input class="sinp" placeholder="// search code or keyword..." style="flex:1" oninput="renderHttpCodes(this.value)"/></div>
+    <div class="http-list" id="httpList"></div>
+  </div>
+</div>
+
+<!-- ─── CASE CONVERTER ─── -->
+<div class="tool-panel" id="tool-casecvt">
+  <div class="card">
+    <div class="card-hdr">CASE CONVERTER</div>
+    <div class="srow"><input class="sinp" id="caseIn" placeholder="// type or paste text..." style="flex:1" oninput="convertCase()"/></div>
+    <div class="case-grid" id="caseGrid"></div>
+  </div>
+</div>
+
+<!-- ─── MARKDOWN PREVIEW (tabbed) ─── -->
+<div class="tool-panel" id="tool-markdown">
+  <div class="card">
+    <div class="card-hdr">MARKDOWN PREVIEW</div>
+    <div class="tab-bar">
+      <button class="tab-btn act" data-tab-btn="md" data-tab-target="mdEdit" onclick="switchTab('md','mdEdit')">EDITOR</button>
+      <button class="tab-btn" data-tab-btn="md" data-tab-target="mdView" onclick="switchTab('md','mdView');updMarkdown()">PREVIEW</button>
+    </div>
+    <div data-tab-group="md" data-tab-id="mdEdit" style="display:block">
+      <textarea class="tool-in full-area" id="mdIn" placeholder="# Hello&#10;&#10;Type **markdown** here..." oninput="updMarkdown()"></textarea>
+    </div>
+    <div data-tab-group="md" data-tab-id="mdView" style="display:none">
+      <div class="md-preview full-area" id="mdPreview"></div>
+      <div class="brow" style="margin-top:8px;margin-bottom:0"><button class="btn full" onclick="mdCopyHtml()">COPY HTML</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── SETTINGS ─── -->
+<div class="tool-panel" id="tool-settings">
+  <div class="card">
+    <div class="card-hdr">DISPLAY SETTINGS</div>
+    <div class="range-row"><span class="lbl" style="margin:0;min-width:100px">BRIGHTNESS</span><input type="range" id="setBright" min="40" max="160" value="100" oninput="onSettingsChange()"/><span class="range-val" id="setBrightVal">100%</span></div>
+    <div class="range-row"><span class="lbl" style="margin:0;min-width:100px">TEXT: HEADERS</span><input type="range" id="setHdr" min="60" max="150" value="100" oninput="onSettingsChange()"/><span class="range-val" id="setHdrVal">100%</span></div>
+    <div class="range-row"><span class="lbl" style="margin:0;min-width:100px">TEXT: BODY</span><input type="range" id="setReg" min="60" max="150" value="100" oninput="onSettingsChange()"/><span class="range-val" id="setRegVal">100%</span></div>
+    <div class="range-row"><span class="lbl" style="margin:0;min-width:100px">TEXT: TINY/CAPTION</span><input type="range" id="setTiny" min="60" max="150" value="100" oninput="onSettingsChange()"/><span class="range-val" id="setTinyVal">100%</span></div>
+    <div class="brow" style="margin-top:12px"><button class="btn dng full" onclick="resetSettings()">RESET TO DEFAULTS</button></div>
+    <div class="gap-info">// settings are auto-saved to local storage and persist across sessions.</div>
+  </div>
+</div>
+
+</div><!-- /main-content -->
+</div><!-- /app -->
+
+<!-- ══ TOOLBOX OVERLAY ══ -->
+<div class="toolbox-overlay" id="toolboxOverlay">
+  <div class="toolbox-header">
+    <span class="toolbox-title">TOOLBOX</span>
+    <button class="toolbox-close" onclick="closeToolbox()">x</button>
+  </div>
+  <div class="toolbox-body">
+
+    <div class="tb-cat">SYSTEM</div>
+    <div class="tb-grid">
+      <button class="tb-item act" data-tool="shutdown" onclick="selectTool('shutdown')">
+        <svg viewBox="0 0 24 24"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/></svg>
+        <span>Shutdown Timer</span></button>
+      <button class="tb-item" data-tool="schedule" onclick="selectTool('schedule')">
+        <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        <span>Schedule Shutdown</span></button>
+      <button class="tb-item" data-tool="countdown" onclick="selectTool('countdown')">
+        <svg viewBox="0 0 24 24"><path d="M5 22h14"/><path d="M5 2h14"/><path d="M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22"/><path d="M7 2v4.172a2 2 0 0 0 .586 1.414L12 12l4.414-4.414A2 2 0 0 0 17 6.172V2"/></svg>
+        <span>Countdown</span></button>
+    </div>
+
+    <div class="tb-cat">PRODUCTIVITY</div>
+    <div class="tb-grid">
+      <button class="tb-item" data-tool="focus" onclick="selectTool('focus')">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+        <span>Focus / Pomodoro</span></button>
+      <button class="tb-item" data-tool="notes" onclick="selectTool('notes')">
+        <svg viewBox="0 0 24 24"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        <span>Notes</span></button>
+      <button class="tb-item" data-tool="stopwatch" onclick="selectTool('stopwatch')">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2 2"/><path d="M9 2h6"/><path d="M12 2v3"/></svg>
+        <span>Stopwatch</span></button>
+    </div>
+
+    <div class="tb-cat">TIME</div>
+    <div class="tb-grid">
+      <button class="tb-item" data-tool="clocks" onclick="selectTool('clocks')">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        <span>World Clocks</span></button>
+      <button class="tb-item" data-tool="unix" onclick="selectTool('unix')">
+        <svg viewBox="0 0 24 24"><line x1="4" y1="9" x2="20" y2="9"/><line x1="4" y1="15" x2="20" y2="15"/><line x1="10" y1="3" x2="8" y2="21"/><line x1="16" y1="3" x2="14" y2="21"/></svg>
+        <span>Unix Converter</span></button>
+      <button class="tb-item" data-tool="metrics" onclick="selectTool('metrics')">
+        <svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>
+        <span>System Metrics</span></button>
+    </div>
+
+    <div class="tb-cat">DEV TOOLS</div>
+    <div class="tb-grid">
+      <button class="tb-item" data-tool="diff" onclick="selectTool('diff')">
+        <svg viewBox="0 0 24 24"><rect x="2" y="4" width="8" height="16" rx="1"/><rect x="14" y="4" width="8" height="16" rx="1"/><line x1="6" y1="8" x2="6" y2="8.01"/><line x1="6" y1="12" x2="6" y2="12.01"/><line x1="18" y1="8" x2="18" y2="8.01"/><line x1="18" y1="12" x2="18" y2="12.01"/></svg>
+        <span>Diff Viewer</span></button>
+      <button class="tb-item" data-tool="json" onclick="selectTool('json')">
+        <svg viewBox="0 0 24 24"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+        <span>JSON Formatter</span></button>
+      <button class="tb-item" data-tool="regex" onclick="selectTool('regex')">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><line x1="12" y1="3" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="21"/><line x1="3" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="21" y2="12"/><line x1="5.6" y1="5.6" x2="7.8" y2="7.8"/><line x1="16.2" y1="16.2" x2="18.4" y2="18.4"/></svg>
+        <span>Regex Tester</span></button>
+      <button class="tb-item" data-tool="hash" onclick="selectTool('hash')">
+        <svg viewBox="0 0 24 24"><line x1="4" y1="9" x2="20" y2="9"/><line x1="4" y1="15" x2="20" y2="15"/><line x1="10" y1="3" x2="8" y2="21"/><line x1="16" y1="3" x2="14" y2="21"/></svg>
+        <span>Hash Generator</span></button>
+      <button class="tb-item" data-tool="base64" onclick="selectTool('base64')">
+        <svg viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/><line x1="14" y1="4" x2="10" y2="20"/></svg>
+        <span>Base64</span></button>
+      <button class="tb-item" data-tool="urltool" onclick="selectTool('urltool')">
+        <svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+        <span>URL Encode</span></button>
+      <button class="tb-item" data-tool="casecvt" onclick="selectTool('casecvt')">
+        <svg viewBox="0 0 24 24"><path d="M2 18h1.4c1.3 0 2.5-.6 3.3-1.7l6.1-8.6c.7-1.1 2-1.7 3.3-1.7H18"/><path d="m18 2 4 4-4 4"/><path d="M2 6h1.9c1.5 0 2.9.9 3.6 2.2"/><path d="M22 18h-5.9c-1.3 0-2.6-.7-3.3-1.8l-.5-.8"/></svg>
+        <span>Case Converter</span></button>
+      <button class="tb-item" data-tool="http" onclick="selectTool('http')">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+        <span>HTTP Codes</span></button>
+      <button class="tb-item" data-tool="calc" onclick="selectTool('calc')">
+        <svg viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="10" x2="8" y2="10.01"/><line x1="12" y1="10" x2="12" y2="10.01"/><line x1="16" y1="10" x2="16" y2="10.01"/><line x1="8" y1="14" x2="8" y2="14.01"/><line x1="12" y1="14" x2="12" y2="14.01"/><line x1="16" y1="14" x2="16" y2="14.01"/><line x1="8" y1="18" x2="8" y2="18.01"/><line x1="12" y1="18" x2="16" y2="18"/></svg>
+        <span>Calculator</span></button>
+    </div>
+
+    <div class="tb-cat">DESIGN</div>
+    <div class="tb-grid">
+      <button class="tb-item" data-tool="color" onclick="selectTool('color')">
+        <svg viewBox="0 0 24 24"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg>
+        <span>Color Picker</span></button>
+      <button class="tb-item" data-tool="lorem" onclick="selectTool('lorem')">
+        <svg viewBox="0 0 24 24"><line x1="17" y1="10" x2="3" y2="10"/><line x1="21" y1="6" x2="3" y2="6"/><line x1="21" y1="14" x2="3" y2="14"/><line x1="17" y1="18" x2="3" y2="18"/></svg>
+        <span>Lorem Ipsum</span></button>
+      <button class="tb-item" data-tool="markdown" onclick="selectTool('markdown')">
+        <svg viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M6 12V8l2 2 2-2v4"/><path d="M14 12V8h2l2 4"/><path d="M18 8v4"/></svg>
+        <span>Markdown Preview</span></button>
+    </div>
+
+    <div class="tb-cat">SECURITY</div>
+    <div class="tb-grid">
+      <button class="tb-item" data-tool="passgen" onclick="selectTool('passgen')">
+        <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        <span>Password Gen</span></button>
+    </div>
+
+    <div class="tb-cat">APP</div>
+    <div class="tb-grid">
+      <button class="tb-item" data-tool="settings" onclick="selectTool('settings')">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        <span>Settings</span></button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SHUTDOWN MODAL ══ -->
+<div class="ov" id="ov"><div class="modal">
+  <div class="mtitle">! SHUTDOWN !</div>
+  <div class="msub">GRACE PERIOD -- LAST CHANCE TO ABORT</div>
+  <div class="rw"><svg width="72" height="72" viewBox="0 0 72 72"><circle class="tr" cx="36" cy="36" r="31"/><circle class="fi" cx="36" cy="36" r="31" id="ring"/></svg><div class="rn" id="rnum">10</div></div>
+  <div class="grow"><button class="go sel" onclick="selGrace(this,10)">10s</button><button class="go" onclick="selGrace(this,30)">30s</button><button class="go" onclick="selGrace(this,60)">1m</button></div>
+  <button class="bpanic" onclick="panicCancel()">CANCEL SHUTDOWN</button>
+  <button class="ballow" onclick="allowShutdown()">Shut down now</button>
+</div></div>
+
+<!-- ══ FOCUS FULLSCREEN ══ -->
+<div class="fov" id="fov">
+  <div class="fov-t" id="fovt">25:00</div>
+  <div class="fov-l" id="fovl">FOCUS -- POMODORO</div>
+  <div class="fov-pb"><div class="fov-pb-inner" id="fovpb" style="width:0%"></div></div>
+  <button class="fov-btn" onclick="toggleFOv()">EXIT FULLSCREEN</button>
+</div>
+
+<script src="/static/app.js"></script>
+<script src="/static/tools.js"></script>
+<script>
+/* Mouse wheel on all number inputs */
+document.addEventListener('wheel',function(e){
+  const el=e.target;
+  if(el.tagName!=='INPUT'||el.type!=='number')return;
+  if(el.disabled)return;
+  e.preventDefault();
+  const mn=parseFloat(el.min),mx=parseFloat(el.max);
+  const step=parseFloat(el.step)||1;
+  let v=(parseFloat(el.value)||0)+(e.deltaY<0?step:-step);
+  if(!isNaN(mn))v=Math.max(mn,v);
+  if(!isNaN(mx))v=Math.min(mx,v);
+  el.value=v;
+  el.dispatchEvent(new Event('input',{bubbles:true}));
+  el.dispatchEvent(new Event('change',{bubbles:true}));
+},{passive:false});
+</script>
+</body>
+</html>
